@@ -8,6 +8,7 @@ export const Peliculas = () => {
   const [generoSeleccionado, setGeneroSeleccionado] = useState(null); //Para selecccionar el género
   const [mostrarPaginacion, setMostrarPaginacion] = useState(true); //Para mostrar los botones de paginado
   const [mostrarGeneros, setMostrarGeneros] = useState(false); //Para mostrar géneros en responsive
+  const [peliculaSeleccionada, setPeliculaSeleccionada] = useState(null);
 
   //Para cargar las péliculas del género seleccionado sino selecciona la página para ver todas
   let cargar = pagina;
@@ -32,6 +33,7 @@ export const Peliculas = () => {
     if (pagina > 1) {
       setPagina(pagina - 1);
       cargarPeliculas();
+      window.scrollTo(0, 0);
     }
   };
 
@@ -40,6 +42,7 @@ export const Peliculas = () => {
     if (pagina < 500) {
       setPagina(pagina + 1);
       cargarPeliculas();
+      window.scrollTo(0, 0);
     }
   };
 
@@ -59,6 +62,16 @@ export const Peliculas = () => {
   const flagMostrarGeneros = () => {
     setMostrarGeneros(!mostrarGeneros);
   };
+
+  //Ocultar descripción de película una vez seleccionado en responsive
+  const flagMostrarDescripcion = (pelicula) => {
+    if (peliculaSeleccionada && peliculaSeleccionada.id === pelicula.id) {
+      setPeliculaSeleccionada(null);
+    } else {
+      setPeliculaSeleccionada(pelicula);
+    }
+  };
+  
 
   // Con Axios
   async function cargarPeliculas() {
@@ -111,26 +124,29 @@ export const Peliculas = () => {
       
       <div className="contenedor" id="contenedor">
         {/*Botón de lista de géneros responsive*/}
-        <button className="btnMostrarGeneros" onClick={flagMostrarGeneros}>
+        <button className={`btnMostrarGeneros ${!mostrarGeneros ? "active" : "hidden"}`} onClick={flagMostrarGeneros}>
           <span></span>
           <span></span>
           <span></span>
         </button>
+        
         {/*Lista de péliculas*/}
         {datos.map((item) => {
-          {/*Filtra géneros de películas*/}
+          // Filtra géneros de películas
           if (generoSeleccionado && !item.genre_ids.includes(generoSeleccionado)) {
             return null;
           }
+          const esPeliculaSeleccionada = peliculaSeleccionada && peliculaSeleccionada.id === item.id;
           return (
             <div key={item.id} className="pelicula">
               <img
                 className="poster"
                 src={`https://image.tmdb.org/t/p/w500/${item.poster_path}`}
                 alt={item.title}
+                onClick={() => flagMostrarDescripcion(item)}
               ></img>
-              <h3 className="titulo">{item.title}</h3>
-              <p>{item.overview}</p>
+              <h3 className="titulo" onClick={() => flagMostrarDescripcion(item)}>{item.title}</h3>
+              <p className={`descripcion ${esPeliculaSeleccionada ? "active" : "hidden"}`}>{item.overview}</p>
             </div>
           );
         })}
@@ -138,8 +154,9 @@ export const Peliculas = () => {
         {/*Botones de cambiar páginas*/}
       {mostrarPaginacion && (
         <div className="paginacion" id="paginacion">
-          <button onClick={btnAnterior}>Anterior</button>
-          <button onClick={btnSiguiente}>Siguiente</button>
+          <button onClick={btnAnterior}>{"<"} Anterior</button>
+          <p>{pagina}</p>
+          <button onClick={btnSiguiente}>Siguiente {">"}</button>
         </div>
       )}
     </div>

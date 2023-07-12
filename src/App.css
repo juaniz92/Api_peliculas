@@ -6,8 +6,8 @@
 
 body {
 	font-family: 'Montserrat', sans-serif;
-	background: #ffffff;
-	color: #1d1d1d;
+	background: #0a0096;
+	color: #ffffff;
 }
 
 .export{
@@ -35,12 +35,22 @@ body {
 .contenedor .pelicula .titulo {
 	font-size: 16px;
 	font-weight: 600;
+	cursor: pointer;
 }
 
 .contenedor .pelicula .poster {
 	width: 100%;
 	margin-bottom: 10px;
 	border-radius: 15px;
+	cursor: pointer;
+}
+
+.descripcion.hidden {
+	display: none;
+}
+
+.descripcion {
+	margin-bottom: 30px;
 }
 
 .paginacion {
@@ -50,35 +60,37 @@ body {
 	width: 100%;
 	display: flex;
 	justify-content: center;
-	gap: 20px;
-	padding: 10px;
+	padding: 20px;
+	gap: 30px;
 }
 
 .paginacion button {
 	cursor: pointer;
 	border: none;
-	display: flex;
-	align-items: center;
-	justify-content: center;
 	text-align: center;
-	height: 50px;
-	width: 200px;
-	background: #241744;
+	background: none;
 	color: #fff;
-	border-radius: 100px;
 	font-family: 'Montserrat', sans-serif;
 	font-weight: 600;
-	transition: .3s ease all;
+}
+
+.paginacion p {
+	background: none;
+	margin-top: auto;
+	margin-bottom: auto;
+	color: #fff;
+	font-family: 'Montserrat', sans-serif;
+	font-weight: 600;
 }
 
 .paginacion button:hover {
-	background: #137c32;
+	text-decoration: underline;
 }
 
 .lista-clase {
 	position: sticky;
 	display: flex;
-	justify-content: center;
+	justify-content: space-between;
 	gap: 10px;
 	padding: 10px;
 	top: 0;
@@ -96,7 +108,7 @@ body {
 	justify-content: center;
 	text-align: center;
 	width: 100px;
-	background: #d10000;
+	background: none;
 	color: #fff;
 	border-radius: 20px;
 	font-family: 'Montserrat', sans-serif;
@@ -106,29 +118,76 @@ body {
 }
 
 .lista-clase button:hover {
-	background: #07099e;
+	text-decoration: underline;
 }
 
 .lista-clase button:focus {
-	background: #14b2fc;
+	text-decoration: underline;
 }
 
 .btnMostrarGeneros{
 	display: none;
 }
 
-/* Estilos para pantallas con un ancho máximo de 600px */
-@media (max-width: 600px) {
+/* Estilos para pantallas con un ancho máximo de 1500px */
+@media (max-width: 1500px) {
 	.contenedor {
-		grid-template-columns: repeat(2, 1fr);
+		grid-template-columns: repeat(4, 1fr);
 	}
 
 	.paginacion {
 		flex-wrap: wrap;
 	}
 
-	.paginacion button {
-		width: 150px;
+	.lista-clase {
+		position: sticky;
+		display: flex;
+		justify-content: start;
+		flex-wrap: wrap;
+		gap: 10px;
+		padding: 10px;
+		top: 0;
+		left: 0;
+		background: #000000;
+		height: auto;
+		width: auto;
+	}
+
+	.lista-clase button {
+		padding: 2px;
+		border-bottom: #ccc solid 1px;
+		font-size: 14px;
+		background: none;
+		border: none;
+	}
+
+	.btnMostrarGeneros span {
+		background-color: #ffffff;
+		height: 3px;
+		width: 75%;
+		position: absolute;
+		transition: transform 0.3s, opacity 0.3s;
+	}
+	  
+	.btnMostrarGeneros span:nth-child(1) {
+		top: 25%;
+	}
+	
+	.btnMostrarGeneros span:nth-child(2) {
+		top: 50%;
+		transform: translateY(-50%);
+	}
+	
+	.btnMostrarGeneros span:nth-child(3) {
+		bottom: 25%;
+	}
+}
+
+/* Estilos para pantallas con un ancho máximo de 900px */
+@media (max-width: 900px) {
+	.contenedor {
+		grid-template-columns: repeat(2, 1fr);
+		gap: 20px;
 	}
 
 	.lista-clase {
@@ -143,8 +202,11 @@ body {
 		opacity: .9;
 	}
 
-
 	.lista-clase.hidden {
+		display: none;
+	}
+
+	.btnMostrarGeneros.hidden {
 		display: none;
 	}
 
@@ -204,7 +266,8 @@ body {
 	.paginacion {
 		flex-direction: column;
 		align-items: center;
-		padding: 5px;
+		padding: 0px;
+		gap: 0px;
 	}
 
 	.paginacion button {
