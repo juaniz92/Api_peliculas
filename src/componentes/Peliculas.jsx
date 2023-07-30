@@ -1,5 +1,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
+import YouTube from "react-youtube";
+import VerTrailer from "./VerTrailer";
 
 export const Peliculas = () => {
   const [datos, setDatos] = useState([]); //Almacena las peliculas de la Api
@@ -8,7 +10,10 @@ export const Peliculas = () => {
   const [generoSeleccionado, setGeneroSeleccionado] = useState(null); //Para selecccionar el género
   const [mostrarPaginacion, setMostrarPaginacion] = useState(true); //Para mostrar los botones de paginado
   const [mostrarGeneros, setMostrarGeneros] = useState(false); //Para mostrar géneros en responsive
-  const [peliculaSeleccionada, setPeliculaSeleccionada] = useState(null);
+  const [peliculaSeleccionada, setPeliculaSeleccionada] = useState(null);//Id pelicula seleccionada
+  const [trailerId, setTrailerId] = useState(null);//Obtener Id del trailer
+  const [verTrailerOpen, setVerTrailerOpen] = useState(false);// Cerrar el componente VerTrailer
+  const [busqueda, setBusqueda] = useState("");//Almacenar el valor del inpur para la búsqueda por nombre
 
   //Para cargar las péliculas del género seleccionado sino selecciona la página para ver todas
   let cargar = pagina;
@@ -30,6 +35,7 @@ export const Peliculas = () => {
 
   //Ir a una página previa
   const btnAnterior = (e) => {
+    setVerTrailerOpen(false)
     if (pagina > 1) {
       setPagina(pagina - 1);
       cargarPeliculas();
@@ -39,6 +45,7 @@ export const Peliculas = () => {
 
   //Ir a próxima página
   const btnSiguiente = (e) => {
+    setVerTrailerOpen(false)
     if (pagina < 500) {
       setPagina(pagina + 1);
       cargarPeliculas();
@@ -48,6 +55,7 @@ export const Peliculas = () => {
 
   //Géneros del menú
   const btnGenero = (generoId) => {
+    setVerTrailerOpen(false)
     setGeneroSeleccionado(generoId);
     if(generoId == null){
       setMostrarPaginacion(true);
@@ -60,15 +68,37 @@ export const Peliculas = () => {
 
   //Ocultar menú de géneros una vez seleccionado en responsive
   const flagMostrarGeneros = () => {
+    setVerTrailerOpen(false)
     setMostrarGeneros(!mostrarGeneros);
   };
 
   //Ocultar descripción de película una vez seleccionado en responsive
-  const flagMostrarDescripcion = (pelicula) => {
+  const abrirTrailer = async (pelicula) => {
     if (peliculaSeleccionada && peliculaSeleccionada.id === pelicula.id) {
       setPeliculaSeleccionada(null);
     } else {
       setPeliculaSeleccionada(pelicula);
+
+      try {
+        // Hacemos una petición a la API de TMDB para obtener los detalles de la película
+        const response = await axios.get(
+          `https://api.themoviedb.org/3/movie/${pelicula.id}?api_key=ee2648f9f1e9bd8b7424b1f5bb21b561&language=es-US&append_to_response=videos`
+        );
+
+        // Verificamos si hay trailers disponibles para la película
+        if (response.data.videos?.results?.length > 0) {
+          // Obtenemos el ID del primer trailer
+          const trailerId = response.data.videos.results[0].key;
+          setTrailerId(trailerId);
+          setVerTrailerOpen(true); // Abrir el componente VerTrailer
+        } else {
+          // Si no hay trailers disponibles, establecemos el ID del trailer en null
+          setTrailerId(null);
+        }
+      } catch (error) {
+        console.error("Error al obtener los detalles de la película:", error);
+        setTrailerId(null);
+      }
     }
   };
   
@@ -110,17 +140,57 @@ export const Peliculas = () => {
     }
   }
 
+  // Función para realizar la búsqueda de películas
+  const buscarPeliculas = async () => {
+    try {
+      let url = `https://api.themoviedb.org/3/search/movie?api_key=ee2648f9f1e9bd8b7424b1f5bb21b561&language=es-US&query=${encodeURIComponent(
+        busqueda
+      )}`;
+
+      // Si hay un género seleccionado, incluirlo en la consulta de búsqueda
+      if (generoSeleccionado) {
+        url += `&with_genres=${generoSeleccionado}`;
+      }
+
+      const respuesta = await axios.get(url);
+      setDatos(respuesta.data.results);
+      setBusqueda("");
+    } catch (error) {
+      console.error("Error al buscar películas:", error);
+    }
+  };
+  
+
   return (
     <div>
-      {/*Menú de géneros de películas*/}
-      <div className={`lista-clase ${mostrarGeneros ? "active" : "hidden"}`}>
-        <button onClick={() => btnGenero()}>Todos</button>
-        {datosG.map((item) => (
-          <button key={item.id} onClick={() => btnGenero(item.id)}>
-            {item.name}
-          </button>
-        ))}
-      </div>
+      <nav>
+        <div className="cabecera">
+          <h1><a href="/">Pelis-Trailers</a></h1>
+          <div className="buscador">
+            <input type="text"
+              placeholder="Buscar película por nombre..."
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  buscarPeliculas();
+                }
+              }}
+            />
+            <button onClick={buscarPeliculas}>Buscar</button>
+          </div>
+        </div>
+        {/*Menú de géneros de películas*/}
+        <div className={`lista-clase ${mostrarGeneros ? "active" : "hidden"}`}>
+          <button onClick={() => btnGenero()}>Todos</button>
+          {datosG.map((item) => (
+            <button key={item.id} onClick={() => btnGenero(item.id)}>
+              {item.name}
+            </button>
+          ))}
+        </div>
+      </nav>
+      
       
       <div className="contenedor" id="contenedor">
         {/*Botón de lista de géneros responsive*/}
@@ -136,17 +206,16 @@ export const Peliculas = () => {
           if (generoSeleccionado && !item.genre_ids.includes(generoSeleccionado)) {
             return null;
           }
-          const esPeliculaSeleccionada = peliculaSeleccionada && peliculaSeleccionada.id === item.id;
+          
           return (
             <div key={item.id} className="pelicula">
               <img
                 className="poster"
                 src={`https://image.tmdb.org/t/p/w500/${item.poster_path}`}
                 alt={item.title}
-                onClick={() => flagMostrarDescripcion(item)}
+                onClick={() => abrirTrailer(item)}
               ></img>
-              <h3 className="titulo" onClick={() => flagMostrarDescripcion(item)}>{item.title}</h3>
-              <p className={`descripcion ${esPeliculaSeleccionada ? "active" : "hidden"}`}>{item.overview}</p>
+              <h3 className="titulo" onClick={() => abrirTrailer(item)}>{item.title}</h3>
             </div>
           );
         })}
@@ -158,6 +227,15 @@ export const Peliculas = () => {
           <p>{pagina}</p>
           <button onClick={btnSiguiente}>Siguiente {">"}</button>
         </div>
+      )}
+      {/* Renderiza el componente VerTrailer si verTrailerOpen es true */}
+      {verTrailerOpen && trailerId && (
+        <VerTrailer
+          trailerId={trailerId}
+          pelicula={peliculaSeleccionada.title}
+          descripcion={peliculaSeleccionada.overview}
+          onClose={() => setVerTrailerOpen(false)}
+        />
       )}
     </div>
   );
