@@ -11,7 +11,7 @@ export const Peliculas = () => {
   const [mostrarPaginacion, setMostrarPaginacion] = useState(true); //Para mostrar los botones de paginado
   const [mostrarGeneros, setMostrarGeneros] = useState(false); //Para mostrar géneros en responsive
   const [peliculaSeleccionada, setPeliculaSeleccionada] = useState(null);//Id pelicula seleccionada
-  const [trailerId, setTrailerId] = useState(null);//Obtener Id del trailer
+  const [trailerId, setTrailerId] = useState("");//Obtener Id del trailer
   const [verTrailerOpen, setVerTrailerOpen] = useState(false);// Cerrar el componente VerTrailer
   const [busqueda, setBusqueda] = useState("");//Almacenar el valor del inpur para la búsqueda por nombre
 
@@ -80,24 +80,21 @@ export const Peliculas = () => {
       setPeliculaSeleccionada(pelicula);
 
       try {
-        // Hacemos una petición a la API de TMDB para obtener los detalles de la película
         const response = await axios.get(
           `https://api.themoviedb.org/3/movie/${pelicula.id}?api_key=ee2648f9f1e9bd8b7424b1f5bb21b561&language=es-US&append_to_response=videos`
         );
 
-        // Verificamos si hay trailers disponibles para la película
-        if (response.data.videos?.results?.length > 0) {
-          // Obtenemos el ID del primer trailer
-          const trailerId = response.data.videos.results[0].key;
-          setTrailerId(trailerId);
-          setVerTrailerOpen(true); // Abrir el componente VerTrailer
-        } else {
-          // Si no hay trailers disponibles, establecemos el ID del trailer en null
-          setTrailerId(null);
-        }
+        // Obtenemos el ID del primer trailer si hay uno disponible
+        const trailerId = response.data.videos?.results?.length > 0
+          ? response.data.videos.results[0].key
+          : "";
+
+        setTrailerId(trailerId);
+        setVerTrailerOpen(true); // Siempre abrir el componente VerTrailer al hacer clic en una película
       } catch (error) {
         console.error("Error al obtener los detalles de la película:", error);
-        setTrailerId(null);
+        setTrailerId(""); // Si hay un error, asegurarse de establecer trailerId a una cadena vacía
+        setVerTrailerOpen(true); // Abrir el componente VerTrailer incluso si no hay trailer disponible
       }
     }
   };
@@ -146,11 +143,6 @@ export const Peliculas = () => {
       let url = `https://api.themoviedb.org/3/search/movie?api_key=ee2648f9f1e9bd8b7424b1f5bb21b561&language=es-US&query=${encodeURIComponent(
         busqueda
       )}`;
-
-      // Si hay un género seleccionado, incluirlo en la consulta de búsqueda
-      if (generoSeleccionado) {
-        url += `&with_genres=${generoSeleccionado}`;
-      }
 
       const respuesta = await axios.get(url);
       setDatos(respuesta.data.results);
@@ -229,7 +221,7 @@ export const Peliculas = () => {
         </div>
       )}
       {/* Renderiza el componente VerTrailer si verTrailerOpen es true */}
-      {verTrailerOpen && trailerId && (
+      {verTrailerOpen && (
         <VerTrailer
           trailerId={trailerId}
           pelicula={peliculaSeleccionada.title}
