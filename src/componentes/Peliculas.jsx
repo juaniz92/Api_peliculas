@@ -212,14 +212,18 @@ export const Peliculas = () => {
           );
         })}
       </div>
+      <div className="footer">
         {/*Botones de cambiar páginas*/}
-      {mostrarPaginacion && (
-        <div className="paginacion" id="paginacion">
-          <button onClick={btnAnterior}>{"<"} Anterior</button>
-          <p>{pagina}</p>
-          <button onClick={btnSiguiente}>Siguiente {">"}</button>
-        </div>
-      )}
+        {mostrarPaginacion && (
+          <div className="paginacion" id="paginacion">
+            <button onClick={btnAnterior}>{"<"} Anterior</button>
+            <p>{pagina}</p>
+            <button onClick={btnSiguiente}>Siguiente {">"}</button>
+          </div>
+        )}
+        <footer><a href="https://www.linkedin.com/in/juan-zalazar/" target="_blank">By Juan Zalazar</a></footer>
+      </div>
+        
       {/* Renderiza el componente VerTrailer si verTrailerOpen es true */}
       {verTrailerOpen && (
         <VerTrailer
