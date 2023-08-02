@@ -14,6 +14,7 @@ export const Peliculas = () => {
   const [trailerId, setTrailerId] = useState("");//Obtener Id del trailer
   const [verTrailerOpen, setVerTrailerOpen] = useState(false);// Cerrar el componente VerTrailer
   const [busqueda, setBusqueda] = useState("");//Almacenar el valor del inpur para la búsqueda por nombre
+  const [resultadosBusqueda, setResultadosBusqueda] = useState([]);
 
   //Para cargar las péliculas del género seleccionado sino selecciona la página para ver todas
   let cargar = pagina;
@@ -55,6 +56,7 @@ export const Peliculas = () => {
 
   //Géneros del menú
   const btnGenero = (generoId) => {
+    setResultadosBusqueda("");
     setVerTrailerOpen(false)
     setGeneroSeleccionado(generoId);
     if(generoId == null){
@@ -102,6 +104,10 @@ export const Peliculas = () => {
 
   // Con Axios
   async function cargarPeliculas() {
+    if (resultadosBusqueda.length > 0) {
+      setDatos(resultadosBusqueda);
+    } else {
+    
     if(generoSeleccionado){
       {/*Traer películas del género seleccionado*/}
       let url = `https://api.themoviedb.org/3/movie/now_playing?api_key=ee2648f9f1e9bd8b7424b1f5bb21b561&language=es-US`;
@@ -119,6 +125,7 @@ export const Peliculas = () => {
       setDatos(respuesta.data.results);
       console.log(respuesta);
     }
+  }
   }
 
   async function cargarGeneros() {
@@ -143,14 +150,16 @@ export const Peliculas = () => {
       let url = `https://api.themoviedb.org/3/search/movie?api_key=ee2648f9f1e9bd8b7424b1f5bb21b561&language=es-US&query=${encodeURIComponent(
         busqueda
       )}`;
-
+  
       const respuesta = await axios.get(url);
-      setDatos(respuesta.data.results);
+      setResultadosBusqueda(respuesta.data.results);
       setBusqueda("");
+      setGeneroSeleccionado(null);
     } catch (error) {
       console.error("Error al buscar películas:", error);
     }
   };
+  
   
 
   return (
@@ -192,25 +201,39 @@ export const Peliculas = () => {
           <span></span>
         </button>
         
-        {/*Lista de péliculas*/}
-        {datos.map((item) => {
-          // Filtra géneros de películas
-          if (generoSeleccionado && !item.genre_ids.includes(generoSeleccionado)) {
-            return null;
-          }
-          
-          return (
+        {/*Lista de películas*/}
+        {resultadosBusqueda.length > 0 ? (
+          resultadosBusqueda.map((item) => (
             <div key={item.id} className="pelicula">
               <img
                 className="poster"
                 src={`https://image.tmdb.org/t/p/w500/${item.poster_path}`}
                 alt={item.title}
                 onClick={() => abrirTrailer(item)}
-              ></img>
+              />
               <h3 className="titulo" onClick={() => abrirTrailer(item)}>{item.title}</h3>
             </div>
-          );
-        })}
+          ))
+        ) : (
+          datos.map((item) => {
+            // Filtra géneros de películas
+            if (generoSeleccionado && !item.genre_ids.includes(generoSeleccionado)) {
+              return null;
+            }
+            
+            return (
+              <div key={item.id} className="pelicula">
+                <img
+                  className="poster"
+                  src={`https://image.tmdb.org/t/p/w500/${item.poster_path}`}
+                  alt={item.title}
+                  onClick={() => abrirTrailer(item)}
+                />
+                <h3 className="titulo" onClick={() => abrirTrailer(item)}>{item.title}</h3>
+              </div>
+            );
+          })
+        )}
       </div>
       <div className="footer">
         {/*Botones de cambiar páginas*/}

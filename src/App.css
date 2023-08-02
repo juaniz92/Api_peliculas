@@ -193,7 +193,6 @@ h1 {
 	border-radius: 10px;
 	z-index: 9999;
 	max-height: 80vh;
-  	overflow-y: scroll; 
   }
   
 .ver-trailer-container iframe {
@@ -219,7 +218,7 @@ h1 {
 }
 
 .footer {
-	position: sticky;
+	position: fixed;
 	bottom: 0;
 	background-color: #000000;
 	width: 100%;
@@ -381,6 +380,10 @@ h1 {
 	.btnMostrarGeneros span:nth-child(3) {
 		bottom: 25%;
 	}
+
+	.ver-trailer-container {
+		overflow-y: scroll; 
+	  }
 }
 
 /* Estilos para pantallas con un ancho máximo de 600px */
